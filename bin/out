@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# Send message to a matrix room. API call looks like this:
+# curl -XPOST -d '{"msgtype":"m.text", "body":"hello"}' "http://matrix.org/_matrix/client/api/v1/rooms/%21CvcvRuDYDzTOzfKKgh%3Alocalhost/send/m.room.message?access_token=YOUR_ACCESS_TOKEN"
+
+
+set -e
+
+cd "${1}"
+
+exec 3>&1
+exec 1>&2
+
+# for jq
+PATH=/usr/local/bin:$PATH
+
+payload=$(mktemp /tmp/resource-in.XXXXXX)
+
+cat > "${payload}" <&0
+
+matrix_server_url="$(jq -r '.source.matrix_server_url' < "${payload}")"
+token="$(jq -r '.source.token' < "${payload}")"
+room_id="$(jq -r '.source.room_id' < "${payload}")"
+
+ts="$(date +%s)"
+
+matrix_endpoint="$matrix_server_url/_matrix/client/r0/rooms/$room_id/send/m.room.message/$ts?access_token=$token"
+
+text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
+from="$(jq -r '.params.from // ""' < "${payload}")"
+text="$(jq '(.params.text // "${TEXT_FILE_CONTENT}")' < "${payload}")"
+msgtype="$(jq '(.params.msgtype // "m.notice")' < "${payload}")"
+
+always_notify="$(jq -r '.params.always_notify // "true"' < "${payload}")"
+debug="$(jq -r '.params.debug // "false"' < "${payload}")"
+silent="$(jq -r '.params.silent // "false"' < "${payload}")"
+
+TEXT_FILE_CONTENT=""
+[[ -n "${text_file}" && -f "${text_file}" ]] && TEXT_FILE_CONTENT="$(cat "${text_file}")"
+
+if [[ "$always_notify" == "true" || -n "$TEXT_FILE_CONTENT" || -z "$text_file" ]]
+then
+  TEXT_FILE_CONTENT="${TEXT_FILE_CONTENT:-_(no notification provided)_}"
+
+  text="$(eval printf ${text} )"
+  [[ -z "${text}" ]] && text="_(missing notification text)_"
+  text="$(echo "${text}" | jq -R -s .)"
+
+  [[ "${token}"   != "null" ]] && username="$(eval "printf ${token}" | jq -R -s .)"
+  [[ "${room_id}"    != "null" ]] && room_id="$(eval "printf ${room_id}" | jq -R -s .)"
+  body="$(cat <<EOF
+{
+  "msgtype": ${msgtype},
+  "body": ${text}
+}
+EOF
+  )"
+
+  compact_body="$(echo "${body}" | jq -c '.')"
+
+  if [[ "$debug" == "true" ]]
+  then
+    json="$(cat <<EOF
+{
+  "matrix_endpoint": "${matrix_endpoint}",
+  "body": ${body}
+}
+EOF
+)"
+    echo "$json" | jq -c '.'
+    exit 0
+  elif [[ "$silent" == "true" ]]
+  then
+    echo "Using silent output"
+    curl -s -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{compact_body}' "${matrix_endpoint}"
+  else
+    curl -v -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{compact_body}' "${matrix_endpoint}"
+  fi
+fi
+
+jq -n "{version:{timestamp:\"$(date +%s)\"}}" >&3
