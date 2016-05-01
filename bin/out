@@ -74,6 +74,7 @@ EOF
     echo "Using silent output"
     curl -s -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d ${compact_body} "${matrix_endpoint}"
   else
+    echo curl -v -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d ${compact_body} "${matrix_endpoint}"
     curl -v -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d ${compact_body} "${matrix_endpoint}"
   fi
 fi
