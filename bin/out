@@ -31,7 +31,7 @@ from="$(jq -r '.params.from // ""' < "${payload}")"
 text="$(jq '(.params.text // "${TEXT_FILE_CONTENT}")' < "${payload}")"
 msgtype="$(jq '(.params.msgtype // "m.notice")' < "${payload}")"
 
-always_notify="$(jq -r '.params.always_notify // "true"' < "${payload}")"
+always_notify="$(jq -r '.params.always_notify // "false"' < "${payload}")"
 debug="$(jq -r '.params.debug // "false"' < "${payload}")"
 silent="$(jq -r '.params.silent // "false"' < "${payload}")"
 
@@ -74,7 +74,6 @@ EOF
     echo "Using silent output"
     curl -s -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d "${compact_body}" "${matrix_endpoint}"
   else
-    echo curl -v -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d "${compact_body}" "${matrix_endpoint}"
     curl -v -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d "${compact_body}" "${matrix_endpoint}"
   fi
 fi
