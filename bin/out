@@ -30,11 +30,11 @@ matrix_endpoint="$matrix_server_url/_matrix/client/r0/rooms/$room_id/send/m.room
 
 text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
 thisdata_file="$(jq -r '.params.data_file // ""' < "${payload}")"
-[ -n "$thisdata_file" && "$thisthisdata_file" != "$data_file" ] && data_file="${thisdata_file}"
+[[ -n $thisdata_file && $thisthisdata_file != $data_file ]] && data_file="${thisdata_file}"
 from="$(jq -r '.params.from // ""' < "${payload}")"
 text="$(jq '(.params.text // "${TEXT_FILE_CONTENT}")' < "${payload}")"
 thismsgtype="$(jq -r '.params.msgtype // ""' < "${payload}")"
-[ -n "$thismsgtype" && "$thismsgtype" != "$msgtype" ] && msgtype="${thismsgtype}"
+[[ -n $thismsgtype && $thismsgtype != $msgtype ]] && msgtype="${thismsgtype}"
 
 always_notify="$(jq -r '.params.always_notify // "false"' < "${payload}")"
 debug="$(jq -r '.params.debug // "false"' < "${payload}")"
