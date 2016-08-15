@@ -51,7 +51,7 @@ then
 
   text="$(eval printf ${text} )"
   [[ -z "${text}" ]] && text="_(missing notification text)_"
-  text="$(echo -n "${text}" | jq -R -s .)"
+  text="$(printf "${text}" | jq -R -s .)"
 
   [[ "${token}"   != "null" ]] && username="$(eval "printf ${token}" | jq -R -s .)"
   [[ "${room_id}"    != "null" ]] && room_id="$(eval "printf ${room_id}" | jq -R -s .)"
@@ -74,13 +74,13 @@ EOF
 }
 EOF
     )"
-    body=$(echo -n $body | jq -c ".build=$builddata")
+    body=$(printf "$body" | jq -c ".build=$builddata")
     if [ -n "$DATA_FILE_CONTENT" ]; then
-      body=$(echo -n $body | jq -c ".data=$DATA_FILE_CONTENT")
+      body=$(printf "$body" | jq -c ".data=$DATA_FILE_CONTENT")
     fi
   fi
 
-  compact_body="$(echo -n "${body}" | jq -c '.')"
+  compact_body="$(printf "${body}" | jq -c '.')"
 
   if [[ "$silent" == "true" ]]
   then
