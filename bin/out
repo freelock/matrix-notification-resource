@@ -57,7 +57,7 @@ then
   [[ "${room_id}"    != "null" ]] && room_id="$(eval "printf ${room_id}" | jq -R -s .)"
   body="$(cat <<EOF
 {
-  "msgtype": ${msgtype},
+  "msgtype": "${msgtype}",
   "body": ${text}
 }
 EOF
