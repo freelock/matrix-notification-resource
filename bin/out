@@ -70,9 +70,9 @@ EOF
 }
 EOF
     )"
-    body=$(echo body | jq -c ".build=$builddata")
+    body=$(echo $body | jq -c ".build=$builddata")
     if [ -n "$DATA_FILE_CONTENT" ]; then
-      body=$(echo body | jq -c ".data=$DATA_FILE_CONTENT")
+      body=$(echo $body | jq -c ".data=$DATA_FILE_CONTENT")
     fi
   fi
 
