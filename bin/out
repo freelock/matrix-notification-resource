@@ -21,20 +21,24 @@ cat > "${payload}" <&0
 matrix_server_url="$(jq -r '.source.matrix_server_url' < "${payload}")"
 token="$(jq -r '.source.token' < "${payload}")"
 room_id="$(jq -r '.source.room_id' < "${payload}")"
+msgtype="$(jq -r '.source.msgtype // "m.notice"' < "${payload}")"
+data_file="$(jq -r '.source.data_file // ""' < "${payload}")"
 
 ts="$(date +%s)"
 
 matrix_endpoint="$matrix_server_url/_matrix/client/r0/rooms/$room_id/send/m.room.message/$ts?access_token=$token"
 
 text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
-data_file="$(jq -r '.params.data_file // ""' < "${payload}")"
+thisdata_file="$(jq -r '.params.data_file // ""' < "${payload}")"
+[ -n "$thisdata_file" && "$thisthisdata_file" != "$data_file" ] && data_file="${thisdata_file}"
 from="$(jq -r '.params.from // ""' < "${payload}")"
 text="$(jq '(.params.text // "${TEXT_FILE_CONTENT}")' < "${payload}")"
-msgtype="$(jq '(.params.msgtype // "m.notice")' < "${payload}")"
+thismsgtype="$(jq -r '.params.msgtype // ""' < "${payload}")"
+[ -n "$thismsgtype" && "$thismsgtype" != "$msgtype" ] && msgtype="${thismsgtype}"
 
 always_notify="$(jq -r '.params.always_notify // "false"' < "${payload}")"
 debug="$(jq -r '.params.debug // "false"' < "${payload}")"
-silent="$(jq -r '.params.silent // "false"' < "${payload}")"
+silent="$(jq -r '.params.silent // "true"' < "${payload}")"
 
 TEXT_FILE_CONTENT=""
 [[ -n "${text_file}" && -f "${text_file}" ]] && TEXT_FILE_CONTENT="$(cat "${text_file}")"
@@ -58,7 +62,7 @@ then
 }
 EOF
   )"
-  if [ "$msgtype" != "m.notice" ]; then
+  if [ "${msgtype}" != "m.notice" ]; then
     # we can attach custom data...
     builddata="$(cat <<EOF
 {
