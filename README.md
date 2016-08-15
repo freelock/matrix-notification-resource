@@ -39,6 +39,9 @@ Then, a user will need to invite the account to the appropriate room, and the ac
 * `matrix_server_url`: *Required.* Example: https://matrix.org
 * `token`: *Required.* token to authenticate with Matrix server
 * `room_id`: *Required.* The room to send notifications to -- this account must already be a member of this room.
+* `msgtype`: Used to post a custom message type e.g. if you want to attach a json blob. If set to anything other than m.notice, the resource will attach a "build" json object containing the build metadata info. Defaults to `m.notice`, can be overridden by the put resource.
+* `data_file`: *Optional.* (string) Default file to post to the data key of a custom message type. The contents of this file is generally assumed to be a JSON-encoded string. Can be overridden in the job parameters.
+
 
 Pull requests accepted for room_alias, user logins, auto-joins.
 
@@ -47,13 +50,15 @@ Pull requests accepted for room_alias, user logins, auto-joins.
 Send message to specified Matrix Room, with the configured parameters
 
 #### Parameters
-* `text`: (string) Text to send to the Matrix room
-* `text_file`: (string) File containing text to send to the Matrix room
+* `text`: (string) Text to send to the Matrix room as the content.body.
+* `text_file`: (string) File containing text to send to the Matrix room as the content.body.
 * `msgtype`: *Optional.* Message type, m.notice, m.text (default: m.notice)
+* `data_file`: *Optional.* (string) Filename to post using a custom_event message type. If unset, defaults to the data_file on the resource.
+* `always_notify`: If true, send a notice even if text_file and data_file are empty. If false, and a text_file is specified but empty, a notification will not be sent.
 
 ## Example
 
-### Check
+### Resources
 ```
 ---
 resources:
@@ -63,7 +68,12 @@ resources:
     matrix_server_url: https://matrix.org
     token: {{matrix_token}}
     room_id: {{matrix_room_id}}
+    data_file: data
 ```
+
+### Check
+
+*Not supported*
 
 ### In
 

@@ -27,6 +27,7 @@ ts="$(date +%s)"
 matrix_endpoint="$matrix_server_url/_matrix/client/r0/rooms/$room_id/send/m.room.message/$ts?access_token=$token"
 
 text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
+data_file="$(jq -r '.params.data_file // ""' < "${payload}")"
 from="$(jq -r '.params.from // ""' < "${payload}")"
 text="$(jq '(.params.text // "${TEXT_FILE_CONTENT}")' < "${payload}")"
 msgtype="$(jq '(.params.msgtype // "m.notice")' < "${payload}")"
@@ -37,8 +38,10 @@ silent="$(jq -r '.params.silent // "false"' < "${payload}")"
 
 TEXT_FILE_CONTENT=""
 [[ -n "${text_file}" && -f "${text_file}" ]] && TEXT_FILE_CONTENT="$(cat "${text_file}")"
+DATA_FILE_CONTENT=""
+[[ -n "${data_file}" && -f "${data_file}" ]] && DATA_FILE_CONTENT="$(cat "${data_file}")"
 
-if [[ "$always_notify" == "true" || -n "$TEXT_FILE_CONTENT" || -z "$text_file" ]]
+if [[ "$always_notify" == "true" || -n "$TEXT_FILE_CONTENT" || -z "$text_file" || -n "$DATA_FILE_CONTENT" ]]
 then
   TEXT_FILE_CONTENT="${TEXT_FILE_CONTENT:-_(no notification provided)_}"
 
@@ -55,21 +58,27 @@ then
 }
 EOF
   )"
+  if [ "$msgtype" != "m.notice" ]; then
+    // we can attach custom data...
+    builddata="$(cat <<EOF
+{
+  "build_job_name": "${BUILD_JOB_NAME}",
+  "build_name": "${BUILD_NAME}",
+  "build_pipeline_name": "${BUILD_PIPELINE_NAME}",
+  "build_id": "${BUILD_ID}",
+  "atc_external_url": "${ATC_EXTERNAL_URL}"
+}
+EOF
+    )"
+    body=$(echo body | jq -c ".build=$builddata")
+    if [ -n "$DATA_FILE_CONTENT" ]; then
+      body=$(echo body | jq -c ".data=$DATA_FILE_CONTENT")
+    fi
+  fi
 
   compact_body="$(echo "${body}" | jq -c '.')"
 
-  if [[ "$debug" == "true" ]]
-  then
-    json="$(cat <<EOF
-{
-  "matrix_endpoint": "${matrix_endpoint}",
-  "body": ${body}
-}
-EOF
-)"
-    echo "$json" | jq -c '.'
-    exit 0
-  elif [[ "$silent" == "true" ]]
+  if [[ "$silent" == "true" ]]
   then
     echo "Using silent output"
     curl -s -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d "${compact_body}" "${matrix_endpoint}"
