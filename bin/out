@@ -59,7 +59,7 @@ then
 EOF
   )"
   if [ "$msgtype" != "m.notice" ]; then
-    // we can attach custom data...
+    # we can attach custom data...
     builddata="$(cat <<EOF
 {
   "build_job_name": "${BUILD_JOB_NAME}",
