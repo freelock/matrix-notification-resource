@@ -80,7 +80,7 @@ EOF
       body=$(echo -n $body | jq -c ".data=$DATA_FILE_CONTENT")
     fi
     if [ -n "${trigger}" ]; then
-      body=$(echo -n $body | jq -c ".trigger=\"${trigger\"")
+      body=$(echo -n $body | jq -c ".trigger=\"${trigger}\"")
     fi
   fi
 
