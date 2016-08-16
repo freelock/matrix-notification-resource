@@ -32,6 +32,7 @@ text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
 thisdata_file="$(jq -r '.params.data_file // ""' < "${payload}")"
 [[ -n $thisdata_file && $thisthisdata_file != $data_file ]] && data_file="${thisdata_file}"
 from="$(jq -r '.params.from // ""' < "${payload}")"
+trigger="$(jq -r '.params.trigger // ""' < "${payload}")"
 text="$(jq '(.params.text // "${TEXT_FILE_CONTENT}")' < "${payload}")"
 thismsgtype="$(jq -r '.params.msgtype // ""' < "${payload}")"
 [[ -n $thismsgtype && $thismsgtype != $msgtype ]] && msgtype="${thismsgtype}"
@@ -77,6 +78,9 @@ EOF
     body=$(echo -n $body | jq -c ".build=$builddata")
     if [ -n "$DATA_FILE_CONTENT" ]; then
       body=$(echo -n $body | jq -c ".data=$DATA_FILE_CONTENT")
+    fi
+    if [ -n "${trigger}" ]; then
+      body=$(echo -n $body | jq -c ".trigger=${trigger}")
     fi
   fi
 

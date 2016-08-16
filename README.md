@@ -53,7 +53,8 @@ Send message to specified Matrix Room, with the configured parameters
 * `text`: (string) Text to send to the Matrix room as the content.body.
 * `text_file`: (string) File containing text to send to the Matrix room as the content.body.
 * `msgtype`: *Optional.* Message type, m.notice, m.text (default: m.notice)
-* `data_file`: *Optional.* (string) Filename to post using a custom_event message type. If unset, defaults to the data_file on the resource.
+* `data_file`: *Optional.* (string) Filename to post using a custom_event message type. If unset, defaults to the data_file on the resource. If it exists, the file must contain valid JSON.
+* `trigger`: *Optional.* (string) Arbitrary test to add to a "trigger" data item on custom message types.
 * `always_notify`: If true, send a notice even if text_file and data_file are empty. If false, and a text_file is specified but empty, a notification will not be sent.
 
 ## Example
@@ -68,6 +69,7 @@ resources:
     matrix_server_url: https://matrix.org
     token: {{matrix_token}}
     room_id: {{matrix_room_id}}
+    msgtype: com.freelock.data
     data_file: data
 ```
 
@@ -94,4 +96,16 @@ resources:
         http://my.concourse.url/builds/$BUILD_ID
 
         Result: $TEXT_FILE_CONTENT
+```
+
+Matrix has the ability to attach and store arbitrary JSON. This can be very useful to send arbitrary results that a bot might use for further action. Freelock uses this ability to pass extensive information about various deployment environment settings, while keeping the human-readable portion brief.
+
+These extra data keys are not sent if using the default `m.notice` message type, but if you define a custom msgtype, this resource will automatically add a JSON object containing the build data -- Job name, pipeline name, build name (the sequence number within this pipeline), build id, and concourse ATC url. It will also attach the contents of a data file added to the `data` key, and a `trigger` key that is useful to easily pass info about a particular Matrix put -- e.g. 'success', 'fail', 'start', 'end', 'info' -- which your Matrix bot might find useful for handling the message.
+```
+  - put: matrix-notification
+    params:
+      msgtype: com.freelock.data
+      data_file: matrix-notification/data
+      trigger: fail
+      message: Test failure.
 ```
