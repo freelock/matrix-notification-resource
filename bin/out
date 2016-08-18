@@ -40,6 +40,9 @@ thismsgtype="$(jq -r '.params.msgtype // ""' < "${payload}")"
 always_notify="$(jq -r '.params.always_notify // "false"' < "${payload}")"
 debug="$(jq -r '.params.debug // "false"' < "${payload}")"
 silent="$(jq -r '.params.silent // "true"' < "${payload}")"
+link="$(jq -r '.params.link // "false"' < "${payload}")"
+prefix="$(jq -r '.params.prefix // ""' < "${payload}")"
+
 
 TEXT_FILE_CONTENT=""
 [[ -n "${text_file}" && -f "${text_file}" ]] && TEXT_FILE_CONTENT="$(cat "${text_file}")"
@@ -53,6 +56,12 @@ then
   text="$(eval printf ${text} )"
   [[ -z "${text}" ]] && text="_(missing notification text)_"
   text="$(echo -n "${text}" | jq -R -s .)"
+
+  [ "${link}" == "true" ] && text="<a href=\"$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME\">${text}</a>"
+  if [ -n "$prefix" ]; then
+    prefix="$(eval printf ${prefix} )"
+    text="${prefix}: ${text}"
+  fi
 
   [[ "${token}"   != "null" ]] && username="$(eval "printf ${token}" | jq -R -s .)"
   [[ "${room_id}"    != "null" ]] && room_id="$(eval "printf ${room_id}" | jq -R -s .)"

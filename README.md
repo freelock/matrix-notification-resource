@@ -56,6 +56,8 @@ Send message to specified Matrix Room, with the configured parameters
 * `data_file`: *Optional.* (string) Filename to post using a custom_event message type. If unset, defaults to the data_file on the resource. If it exists, the file must contain valid JSON.
 * `trigger`: *Optional.* (string) Arbitrary test to add to a "trigger" data item on custom message types.
 * `always_notify`: If true, send a notice even if text_file and data_file are empty. If false, and a text_file is specified but empty, a notification will not be sent.
+* `prefix`: If set, this will be added to the beginning of a message. Commonly used with $BUILD_PIPELINE_NAME to indicate which pipeline is sending this message.
+* `link`: If set to true, will wrap the text in a link to the build using the pattern $ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
 
 ## Example
 
