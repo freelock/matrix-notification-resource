@@ -55,16 +55,19 @@ then
 
   text="$(eval printf ${text} )"
   [[ -z "${text}" ]] && text="_(missing notification text)_"
-  text="$(echo -n "${text}" | jq -R -s .)"
 
-  [ "${link}" == "true" ] && text="<a href=\"$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME\">${text}</a>"
+  [ "${link}" == "true" ] && formatted_body="<a href=\"$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME\">${text}</a>"
   if [ -n "$prefix" ]; then
     prefix="$(eval printf ${prefix} )"
     text="${prefix}: ${text}"
+    [ -n "${formatted_body}" ] && formatted_body="${prefix}: ${formatted_body}"
   fi
 
+  text="$(echo -n "${text}" | jq -R -s .)"
+  [ -n "${formatted_body}" ] && formatted_body="$(echo -n "${formatted_body}" | jq -R -s .)"
+
   [[ "${token}"   != "null" ]] && username="$(eval "printf ${token}" | jq -R -s .)"
-  [[ "${room_id}"    != "null" ]] && room_id="$(eval "printf ${room_id}" | jq -R -s .)"
+  [[ "${room_id}" != "null" ]] && room_id="$(eval "printf ${room_id}" | jq -R -s .)"
   body="$(cat <<EOF
 {
   "msgtype": "${msgtype}",
@@ -72,7 +75,7 @@ then
 }
 EOF
   )"
-  if [ "${msgtype}" != "m.notice" ]; then
+#  if [ "${msgtype}" != "m.notice" ]; then
     # we can attach custom data...
     builddata="$(cat <<EOF
 {
@@ -85,13 +88,17 @@ EOF
 EOF
     )"
     body=$(echo -n $body | jq -c ".build=$builddata")
+    if [ -n "${formatted_body}" ]; then
+      body=$(echo -n $body | jq -c ".formatted_body=$formatted_body")
+      body=$(echo -n $body | jq -c ".format=\"org.matrix.custom.html\"")
+    fi
     if [ -n "$DATA_FILE_CONTENT" ]; then
       body=$(echo -n $body | jq -c ".data=$DATA_FILE_CONTENT")
     fi
     if [ -n "${trigger}" ]; then
       body=$(echo -n $body | jq -c ".trigger=\"${trigger}\"")
     fi
-  fi
+#  fi
 
   compact_body="$(echo -n "${body}" | jq -c '.')"
 
