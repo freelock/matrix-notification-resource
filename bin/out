@@ -41,6 +41,7 @@ always_notify="$(jq -r '.params.always_notify // "false"' < "${payload}")"
 debug="$(jq -r '.params.debug // "false"' < "${payload}")"
 silent="$(jq -r '.params.silent // "true"' < "${payload}")"
 link="$(jq -r '.params.link // "false"' < "${payload}")"
+team="$(jq -r '.params.team // "main"' < "${payload}")"
 prefix="$(jq -r '.params.prefix // ""' < "${payload}")"
 
 
@@ -56,7 +57,7 @@ then
   text="$(eval printf ${text} )"
   [[ -z "${text}" ]] && text="_(missing notification text)_"
 
-  [ "${link}" == "true" ] && formatted_body="<a href=\"$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME\">${text}</a>"
+  [ "${link}" == "true" ] && formatted_body="<a href=\"$ATC_EXTERNAL_URL/teams/${team}/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME\">${text}</a>"
   if [ -n "$prefix" ]; then
     prefix="$(eval printf ${prefix} )"
     text="${prefix}: ${text}"
