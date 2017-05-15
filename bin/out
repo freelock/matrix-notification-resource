@@ -5,7 +5,8 @@
 
 
 set -e
-
+# workaround for directory not existing before get in 3.0.0
+mkdir -p "${1}"
 cd "${1}"
 
 exec 3>&1
