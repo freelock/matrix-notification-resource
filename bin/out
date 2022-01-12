@@ -25,7 +25,7 @@ room_id="$(jq -r '.source.room_id' < "${payload}")"
 msgtype="$(jq -r '.source.msgtype // "m.notice"' < "${payload}")"
 data_file="$(jq -r '.source.data_file // ""' < "${payload}")"
 
-ts="$(date +%s)"
+ts="$(date +%s%N)"
 
 matrix_endpoint="$matrix_server_url/_matrix/client/r0/rooms/$room_id/send/m.room.message/$ts?access_token=$token"
 
