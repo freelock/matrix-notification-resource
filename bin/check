@@ -1,5 +1,0 @@
-#!/bin/bash
-
-read json
-echo '[]'
-exit 0
