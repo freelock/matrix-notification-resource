@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 RUN DEBIAN_FRONTENT=noninteractive && \
   apt-get update && apt-get -y install jq curl
 

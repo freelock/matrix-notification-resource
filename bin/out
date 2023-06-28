@@ -5,8 +5,7 @@
 
 
 set -e
-# workaround for directory not existing before get in 3.0.0
-mkdir -p "${1}"
+
 cd "${1}"
 
 exec 3>&1
@@ -15,7 +14,7 @@ exec 1>&2
 # for jq
 PATH=/usr/local/bin:$PATH
 
-payload=$(mktemp /tmp/resource-in.XXXXXX)
+payload=$(mktemp /tmp/resource-in.XXXXXXX)
 
 cat > "${payload}" <&0
 
@@ -58,7 +57,7 @@ then
   text="$(eval printf ${text} )"
   [[ -z "${text}" ]] && text="_(missing notification text)_"
 
-  [ "${link}" == "true" ] && formatted_body="<a href=\"$ATC_EXTERNAL_URL/teams/${team}/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME\">${text}</a>"
+  [ "${link}" == "true" ] && formatted_body="<a href=\"$ATC_EXTERNAL_URL/teams/${BUILD_TEAM_NAME}/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME\">${text}</a>"
   if [ -n "$prefix" ]; then
     prefix="$(eval printf ${prefix} )"
     text="${prefix}: ${text}"
