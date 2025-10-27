@@ -41,6 +41,7 @@ Then, a user will need to invite the account to the appropriate room, and the ac
 * `room_id`: *Required.* The room to send notifications to -- this account must already be a member of this room.
 * `msgtype`: Used to post a custom message type e.g. if you want to attach a json blob. If set to anything other than m.notice, the resource will attach a "build" json object containing the build metadata info. Defaults to `m.notice`, can be overridden by the put resource.
 * `data_file`: *Optional.* (string) Default file to post to the data key of a custom message type. The contents of this file is generally assumed to be a JSON-encoded string. Can be overridden in the job parameters.
+* `insecure`: *Optional.* (boolean) If true, disables SSL certificate verification for curl requests (uses curl -k/--insecure). Default is false.
 
 
 Pull requests accepted for room_alias, user logins, auto-joins.

@@ -23,6 +23,12 @@ token="$(jq -r '.source.token' < "${payload}")"
 room_id="$(jq -r '.source.room_id' < "${payload}")"
 msgtype="$(jq -r '.source.msgtype // "m.notice"' < "${payload}")"
 data_file="$(jq -r '.source.data_file // ""' < "${payload}")"
+insecure="$(jq -r '.source.insecure // "false"' < "${payload}")"
+
+ADDITIONAL_CURL_OPTIONS=""
+if [[ "$insecure" == "true" ]]; then
+  ADDITIONAL_CURL_OPTIONS="-k"
+fi
 
 ts="$(date +%s%N)"
 
@@ -107,9 +113,9 @@ EOF
   if [[ "$silent" == "true" ]]
   then
     echo "Using silent output"
-    curl -s -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d "${compact_body}" "${matrix_endpoint}"
+    curl $ADDITIONAL_CURL_OPTIONS -s -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d "${compact_body}" "${matrix_endpoint}"
   else
-    curl -v -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d "${compact_body}" "${matrix_endpoint}"
+    curl $ADDITIONAL_CURL_OPTIONS -v -X PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -d "${compact_body}" "${matrix_endpoint}"
   fi
 fi
 
