@@ -63,7 +63,17 @@ then
   text="$(eval printf ${text} )"
   [[ -z "${text}" ]] && text="_(missing notification text)_"
 
-  [ "${link}" == "true" ] && formatted_body="<a href=\"$ATC_EXTERNAL_URL/teams/${BUILD_TEAM_NAME}/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME\">${text}</a>"
+  if [ "${link}" == "true" ]; then
+    concourse_url="$ATC_EXTERNAL_URL/teams/${BUILD_TEAM_NAME}/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME"
+    if [ -n "$TEXT_FILE_CONTENT" ]; then
+      # Rich content from text_file — linkify URLs and append build link separately
+      formatted_body="$(echo -n "${text}" | sed -E 's~(https?://[A-Za-z0-9._~:/?#\[\]@!$&'"'"'()*+,;%=-]+)~<a href="\1">\1</a>~g')"
+      formatted_body="${formatted_body}<br/><a href=\"${concourse_url}\">🔗 View build</a>"
+    else
+      # Simple text — wrap in a single build link as before
+      formatted_body="<a href=\"${concourse_url}\">${text}</a>"
+    fi
+  fi
   if [ -n "$prefix" ]; then
     prefix="$(eval printf ${prefix} )"
     text="${prefix}: ${text}"
