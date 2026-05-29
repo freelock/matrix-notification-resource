@@ -50,6 +50,12 @@ TEXT_FILE_CONTENT=""
 DATA_FILE_CONTENT=""
 [[ -n "${data_file}" && -f "${data_file}" ]] && DATA_FILE_CONTENT="$(cat "${data_file}")"
 
+# Use text_file content as the body when params.text is a simple fallback
+# (does not contain the $TEXT_FILE_CONTENT template variable).
+if [[ -n "$TEXT_FILE_CONTENT" && "$text" != *'$TEXT_FILE_CONTENT'* ]]; then
+    text="$(echo -n "$TEXT_FILE_CONTENT" | jq -R -s .)"
+fi
+
 if [[ "$always_notify" == "true" || -n "$TEXT_FILE_CONTENT" || -z "$text_file" || -n "$DATA_FILE_CONTENT" ]]
 then
   TEXT_FILE_CONTENT="${TEXT_FILE_CONTENT:-_(no notification provided)_}"
